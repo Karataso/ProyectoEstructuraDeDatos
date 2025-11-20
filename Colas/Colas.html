@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Objeto Multimedia Colas (Dark Theme)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Objeto Multimedia Colas</h1>
+    <p class="subtitle">Estructura de datos interactiva con iteradores Frente y Final</p>
+    <p class="subtitle">Por: Arafath Sepulveda</p>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="mode-toggle">
+                <div class="toggle-btn" id="toggleMode">
+                    <i class="fas fa-sync-alt"></i>
+                    <span id="modeText">Cambiar a Cola Circular</span>
+                </div>
+                <div class="toggle-btn fifo-lifo-toggle" id="toggleFifoLifo">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span id="fifoLifoText">Cambiar a LIFO</span>
+                </div>
+            </div>
+
+            <div class="capacity">Capacidad de la cola: <span id="capacity">10</span> elementos</div>
+
+            <div class="cola-container">
+                <!-- Indicadores para cola normal -->
+                <div class="indicadores" id="indicadoresNormal">
+                    <div class="indicador frente-ind">Frente</div>
+                    <div class="indicador final-ind">Final</div>
+                </div>
+
+                <!-- Visualización de cola sencilla -->
+                <div class="cola-normal" id="colaNormal">
+                    <!-- Los elementos de la cola normal se generarán dinámicamente -->
+                </div>
+
+                <!-- Visualización de cola circular -->
+                <div class="cola-circular" id="colaCircular" style="display: none;">
+                    <div class="circular-track"></div>
+                    <!-- Los elementos de la cola circular se generarán dinámicamente -->
+                    <!-- Los indicadores de frente y final se agregarán dinámicamente -->
+                </div>
+            </div>
+
+            <div class="status info" id="status">
+                Presiona un botón para interactuar con la cola
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="elementoInput" placeholder="Ingresa un elemento" maxlength="15">
+                <button class="input-btn" id="enqueueBtn">Agregar (Enqueue)</button>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="controls">
+                <button id="dequeueBtn">Eliminar (Dequeue)</button>
+                <button id="frontBtn">Consultar Frente</button>
+                <button id="rearBtn">Consultar Final</button>
+                <button id="sizeBtn">Tamaño Actual</button>
+                <button id="clearBtn">Vaciar Cola</button>
+            </div>
+
+            <div class="info-panel">
+                <h3 id="infoTitle">Cola Sencilla - Características implementadas:</h3>
+                <ul id="infoList">
+                    <!-- Dynamic list content will be inserted by JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-buttons">
+            <a href="https://uetitc.github.io/DataStructure-2024-2/Lessons/08-Queues.html" target="_blank" class="footer-btn info-btn">
+                <i class="fas fa-info-circle"></i>
+                Información
+            </a>
+            <a href="https://github.com/Karataso" target="_blank" class="footer-btn github-btn">
+                <i class="fab fa-github"></i>
+                GitHub
+            </a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

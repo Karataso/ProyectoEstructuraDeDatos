@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Objeto Multimedia Árboles Binarios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* --- Color Palette --- */
+        :root {
+            --color-bg-primary: #1c1c1c;
+            --color-bg-card: #282828;
+            --color-accent-button: #383838;
+            --color-text-light: #ffffff;
+            --color-text-subtle: #b3b3b3;
+            --color-node: #00bcd4;
+            --color-node-hover: #00acc1;
+            --color-edge: #4a5568;
+            --color-highlight: #e91e63;
+            --color-success: #34d399;
+            --color-error: #f87171;
+            --color-info: #60a5fa;
+            --color-delete: #ff4757;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--color-bg-primary);
+            color: var(--color-text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            background: var(--color-bg-card);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 2.5rem;
+            color: var(--color-text-light);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            grid-column: 1 / -1;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: var(--color-text-subtle);
+            grid-column: 1 / -1;
+        }
+
+        .left-panel, .right-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Árbol Visualization --- */
+        .arbol-container {
+            width: 100%;
+            min-height: 500px;
+            background: var(--color-bg-primary);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: auto;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 400px;
+            background: transparent;
+        }
+
+        .node {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--color-node);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--color-bg-primary);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 10;
+            user-select: none;
+        }
+
+        .node:hover {
+            background: var(--color-node-hover);
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .node.highlight {
+            background: var(--color-highlight);
+            box-shadow: 0 0 20px var(--color-highlight);
+        }
+
+        .node.root {
+            background: var(--color-highlight);
+            border: 3px solid var(--color-text-light);
+        }
+
+        .node.delete-mode {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .node.delete-ready {
+            background: var(--color-delete);
+            border: 2px solid var(--color-text-light);
+            box-shadow: 0 0 15px var(--color-delete);
+            transform: scale(1.2);
+        }
+
+        .edge {
+            position: absolute;
+            background: var(--color-edge);
+            transform-origin: 0 0;
+            z-index: 5;
+        }
+
+        /* --- Controls --- */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: var(--color-accent-button);
+            color: var(--color-text-light);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background: #4a4a4a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        button.active {
+            background: var(--color-delete);
+            box-shadow: 0 0 15px var(--color-delete);
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 12px 15px;
+            border: 1px solid var(--color-accent-button);
+            border-radius: 8px 0 0 8px;
+            width: 100%;
+            max-width: 250px;
+            font-size: 1rem;
+            outline: none;
+            background: var(--color-bg-primary);
+            color: var(--color-text-light);
+            transition: border-color 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--color-node);
+        }
+
+        input::placeholder {
+            color: var(--color-text-subtle);
+        }
+
+        .input-btn {
+            border-radius: 0 8px 8px 0;
+            padding: 12px 20px;
+        }
+
+        /* --- Status Messages --- */
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            color: var(--color-bg-primary);
+        }
+
+        .success {
+            background: var(--color-success);
+            border: 1px solid color-mix(in srgb, var(--color-success) 80%, black);
+        }
+
+        .error {
+            background: var(--color-error);
+            border: 1px solid color-mix(in srgb, var(--color-error) 80%, black);
+            animation: shake 0.5s;
+        }
+
+        .info {
+            background: var(--color-info);
+            border: 1px solid color-mix(in srgb, var(--color-info) 80%, black);
+        }
+
+        .warning {
+            background: var(--color-delete);
+            border: 1px solid color-mix(in srgb, var(--color-delete) 80%, black);
+        }
+
+        /* --- Info Panel --- */
+        .info-panel {
+            background: var(--color-bg-primary);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            flex-grow: 1;
+        }
+
+        .info-panel h3 {
+            margin-bottom: 10px;
+            color: var(--color-node);
+            font-size: 1.1rem;
+        }
+
+        .info-panel ul {
+            padding-left: 20px;
+            list-style-type: none;
+        }
+
+        .info-panel li {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .info-panel li::before {
+            content: "\2022";
+            color: var(--color-node);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        /* --- Footer --- */
+        footer {
+            margin-top: 30px;
+            padding: 15px;
+            text-align: center;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        .footer-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .footer-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: var(--color-bg-card);
+            border-radius: 8px;
+            color: var(--color-text-light);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid var(--color-accent-button);
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-btn:hover {
+            background: var(--color-accent-button);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .info-btn { color: var(--color-node); }
+        .github-btn { color: var(--color-node); }
+
+        /* --- Animations --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* --- Recorridos --- */
+        .recorridos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .recorrido-result {
+            background: var(--color-bg-primary);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .recorrido-result h4 {
+            color: var(--color-node);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .recorrido-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .recorrido-item {
+            background: var(--color-accent-button);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        /* --- Delete Mode Indicator --- */
+        .delete-mode-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-delete);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.5);
+            z-index: 1000;
+            animation: pulse 2s infinite;
+            display: none;
+        }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            h1 { font-size: 2rem; }
+            .controls { grid-template-columns: 1fr; }
+            button { width: 100%; }
+            .input-group { flex-direction: column; align-items: center; }
+            input { max-width: 100%; border-radius: 8px; margin-bottom: 10px; text-align: center;}
+            .input-btn { border-radius: 8px; }
+            .recorridos { grid-template-columns: 1fr; }
+            .footer-buttons { flex-direction: column; align-items: center; gap: 10px; }
+            .footer-btn { width: 80%; max-width: 300px; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="delete-mode-indicator" id="deleteModeIndicator">
+        <i class="fas fa-times-circle"></i> Modo Eliminación - Haz clic en un nodo para eliminarlo
+    </div>
+
+    <h1>Objeto Multimedia Árboles Binarios</h1>
+    <p class="subtitle">Estructura de datos jerárquica con operaciones de inserción y recorrido</p>
+    <p class="subtitle">Por: Arafath Sepulveda</p>
+
+    <div class="container">
+        <div class="left-panel">
+            <div class="input-group">
+                <input type="number" id="elementoInput" placeholder="Ingresa un número" min="0" max="999">
+                <button class="input-btn" id="insertBtn">
+                    <i class="fas fa-plus"></i> Insertar
+                </button>
+            </div>
+
+            <div class="arbol-container">
+                <canvas id="canvas"></canvas>
+                <!-- Los nodos y aristas se generarán dinámicamente -->
+            </div>
+
+            <div class="status info" id="status">
+                Presiona un botón para interactuar con el árbol
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="controls">
+                <button id="searchBtn">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                <button id="deleteBtn">
+                    <i class="fas fa-times"></i> Eliminar
+                </button>
+                <button id="minBtn">
+                    <i class="fas fa-arrow-down"></i> Mínimo
+                </button>
+                <button id="maxBtn">
+                    <i class="fas fa-arrow-up"></i> Máximo
+                </button>
+                <button id="clearBtn">
+                    <i class="fas fa-broom"></i> Limpiar
+                </button>
+                <button id="randomBtn">
+                    <i class="fas fa-random"></i> Aleatorio
+                </button>
+            </div>
+
+            <div class="recorridos">
+                <div class="recorrido-result">
+                    <h4>Recorrido Pre-Orden</h4>
+                    <div class="recorrido-items" id="preOrderResult"></div>
+                </div>
+                <div class="recorrido-result">
+                    <h4>Recorrido In-Orden</h4>
+                    <div class="recorrido-items" id="inOrderResult"></div>
+                </div>
+                <div class="recorrido-result">
+                    <h4>Recorrido Post-Orden</h4>
+                    <div class="recorrido-items" id="postOrderResult"></div>
+                </div>
+                <div class="recorrido-result">
+                    <h4>Recorrido por Niveles</h4>
+                    <div class="recorrido-items" id="levelOrderResult"></div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>Características implementadas:</h3>
+                <ul>
+                    <li><strong>Inserción y eliminación:</strong> Mantiene la propiedad de árbol binario de búsqueda</li>
+                    <li><strong>Recorridos:</strong> Pre-orden, In-orden, Post-orden y por Niveles</li>
+                    <li><strong>Búsqueda eficiente:</strong> Encuentra elementos en tiempo logarítmico</li>
+                    <li><strong>Operaciones:</strong> Encontrar mínimo, máximo y limpiar árbol</li>
+                    <li><strong>Visualización interactiva:</strong> Nodos y aristas con efectos hover</li>
+                    <li><strong>Generación aleatoria:</strong> Crea árboles de ejemplo automáticamente</li>
+                    <li><strong>Eliminación visual:</strong> Modo especial para eliminar nodos haciendo clic</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-buttons">
+            <a href="#" target="_blank" class="footer-btn info-btn">
+                <i class="fas fa-info-circle"></i>
+                Información
+            </a>
+            <a href="https://github.com/Karataso" target="_blank" class="footer-btn github-btn">
+                <i class="fab fa-github"></i>
+                GitHub
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        // Clase Nodo del Árbol
+        class Nodo {
+            constructor(valor) {
+                this.valor = valor;
+                this.izquierdo = null;
+                this.derecho = null;
+                this.x = 0;
+                this.y = 0;
+            }
+        }
+
+        // Clase Árbol Binario de Búsqueda
+        class ArbolBinario {
+            constructor() {
+                this.raiz = null;
+            }
+
+            // Insertar un valor en el árbol
+            insertar(valor) {
+                const nuevoNodo = new Nodo(valor);
+
+                if (this.raiz === null) {
+                    this.raiz = nuevoNodo;
+                } else {
+                    this._insertarNodo(this.raiz, nuevoNodo);
+                }
+
+                return nuevoNodo;
+            }
+
+            _insertarNodo(nodo, nuevoNodo) {
+                if (nuevoNodo.valor < nodo.valor) {
+                    if (nodo.izquierdo === null) {
+                        nodo.izquierdo = nuevoNodo;
+                    } else {
+                        this._insertarNodo(nodo.izquierdo, nuevoNodo);
+                    }
+                } else {
+                    if (nodo.derecho === null) {
+                        nodo.derecho = nuevoNodo;
+                    } else {
+                        this._insertarNodo(nodo.derecho, nuevoNodo);
+                    }
+                }
+            }
+
+            // Eliminar un valor del árbol
+            eliminar(valor) {
+                this.raiz = this._eliminarNodo(this.raiz, valor);
+            }
+
+            _eliminarNodo(nodo, valor) {
+                if (nodo === null) return null;
+
+                if (valor < nodo.valor) {
+                    nodo.izquierdo = this._eliminarNodo(nodo.izquierdo, valor);
+                } else if (valor > nodo.valor) {
+                    nodo.derecho = this._eliminarNodo(nodo.derecho, valor);
+                } else {
+                    // Nodo encontrado
+                    if (nodo.izquierdo === null && nodo.derecho === null) {
+                        // Caso 1: Nodo hoja
+                        return null;
+                    } else if (nodo.izquierdo === null) {
+                        // Caso 2: Solo hijo derecho
+                        return nodo.derecho;
+                    } else if (nodo.derecho === null) {
+                        // Caso 2: Solo hijo izquierdo
+                        return nodo.izquierdo;
+                    } else {
+                        // Caso 3: Dos hijos
+                        const sucesor = this._encontrarMinNodo(nodo.derecho);
+                        nodo.valor = sucesor.valor;
+                        nodo.derecho = this._eliminarNodo(nodo.derecho, sucesor.valor);
+                    }
+                }
+                return nodo;
+            }
+
+            // Buscar un valor en el árbol
+            buscar(valor) {
+                return this._buscarNodo(this.raiz, valor);
+            }
+
+            _buscarNodo(nodo, valor) {
+                if (nodo === null) return null;
+
+                if (valor === nodo.valor) return nodo;
+
+                if (valor < nodo.valor) {
+                    return this._buscarNodo(nodo.izquierdo, valor);
+                } else {
+                    return this._buscarNodo(nodo.derecho, valor);
+                }
+            }
+
+            // Encontrar el valor mínimo
+            encontrarMin() {
+                return this._encontrarMinNodo(this.raiz);
+            }
+
+            _encontrarMinNodo(nodo) {
+                if (nodo === null) return null;
+                while (nodo.izquierdo !== null) {
+                    nodo = nodo.izquierdo;
+                }
+                return nodo;
+            }
+
+            // Encontrar el valor máximo
+            encontrarMax() {
+                return this._encontrarMaxNodo(this.raiz);
+            }
+
+            _encontrarMaxNodo(nodo) {
+                if (nodo === null) return null;
+                while (nodo.derecho !== null) {
+                    nodo = nodo.derecho;
+                }
+                return nodo;
+            }
+
+            // Recorridos
+            preOrden() {
+                const resultado = [];
+                this._preOrden(this.raiz, resultado);
+                return resultado;
+            }
+
+            _preOrden(nodo, resultado) {
+                if (nodo !== null) {
+                    resultado.push(nodo.valor);
+                    this._preOrden(nodo.izquierdo, resultado);
+                    this._preOrden(nodo.derecho, resultado);
+                }
+            }
+
+            inOrden() {
+                const resultado = [];
+                this._inOrden(this.raiz, resultado);
+                return resultado;
+            }
+
+            _inOrden(nodo, resultado) {
+                if (nodo !== null) {
+                    this._inOrden(nodo.izquierdo, resultado);
+                    resultado.push(nodo.valor);
+                    this._inOrden(nodo.derecho, resultado);
+                }
+            }
+
+            postOrden() {
+                const resultado = [];
+                this._postOrden(this.raiz, resultado);
+                return resultado;
+            }
+
+            _postOrden(nodo, resultado) {
+                if (nodo !== null) {
+                    this._postOrden(nodo.izquierdo, resultado);
+                    this._postOrden(nodo.derecho, resultado);
+                    resultado.push(nodo.valor);
+                }
+            }
+
+            porNiveles() {
+                const resultado = [];
+                if (this.raiz === null) return resultado;
+
+                const cola = [this.raiz];
+
+                while (cola.length > 0) {
+                    const nodo = cola.shift();
+                    resultado.push(nodo.valor);
+
+                    if (nodo.izquierdo !== null) {
+                        cola.push(nodo.izquierdo);
+                    }
+                    if (nodo.derecho !== null) {
+                        cola.push(nodo.derecho);
+                    }
+                }
+
+                return resultado;
+            }
+
+            // Limpiar el árbol
+            limpiar() {
+                this.raiz = null;
+            }
+
+            // Generar árbol aleatorio
+            generarAleatorio(cantidad = 10) {
+                this.limpiar();
+                const numeros = new Set();
+
+                while (numeros.size < cantidad) {
+                    const num = Math.floor(Math.random() * 100) + 1;
+                    if (!numeros.has(num)) {
+                        numeros.add(num);
+                        this.insertar(num);
+                    }
+                }
+            }
+        }
+
+        // Variables globales
+        const arbol = new ArbolBinario();
+        let modoEliminacion = false;
+
+        // Elementos DOM
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const elementoInput = document.getElementById('elementoInput');
+        const statusElement = document.getElementById('status');
+        const insertBtn = document.getElementById('insertBtn');
+        const searchBtn = document.getElementById('searchBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
+        const minBtn = document.getElementById('minBtn');
+        const maxBtn = document.getElementById('maxBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const randomBtn = document.getElementById('randomBtn');
+        const deleteModeIndicator = document.getElementById('deleteModeIndicator');
+        const preOrderResult = document.getElementById('preOrderResult');
+        const inOrderResult = document.getElementById('inOrderResult');
+        const postOrderResult = document.getElementById('postOrderResult');
+        const levelOrderResult = document.getElementById('levelOrderResult');
+
+        // Configurar canvas
+        function configurarCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+
+        // Dibujar el árbol
+        function dibujarArbol() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (arbol.raiz) {
+                // Calcular posiciones
+                calcularPosiciones(arbol.raiz, canvas.width / 2, 50, canvas.width / 4);
+
+                // Dibujar aristas
+                dibujarAristas(arbol.raiz);
+
+                // Dibujar nodos
+                dibujarNodos(arbol.raiz);
+            }
+
+            // Actualizar recorridos
+            actualizarRecorridos();
+        }
+
+        // Calcular posiciones de los nodos
+        function calcularPosiciones(nodo, x, y, espacio) {
+            if (nodo === null) return;
+
+            nodo.x = x;
+            nodo.y = y;
+
+            if (nodo.izquierdo !== null) {
+                calcularPosiciones(nodo.izquierdo, x - espacio, y + 80, espacio / 1.8);
+            }
+            if (nodo.derecho !== null) {
+                calcularPosiciones(nodo.derecho, x + espacio, y + 80, espacio / 1.8);
+            }
+        }
+
+        // Dibujar aristas
+        function dibujarAristas(nodo) {
+            if (nodo === null) return;
+
+            ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-edge');
+            ctx.lineWidth = 2;
+
+            if (nodo.izquierdo !== null) {
+                ctx.beginPath();
+                ctx.moveTo(nodo.x, nodo.y);
+                ctx.lineTo(nodo.izquierdo.x, nodo.izquierdo.y);
+                ctx.stroke();
+                dibujarAristas(nodo.izquierdo);
+            }
+
+            if (nodo.derecho !== null) {
+                ctx.beginPath();
+                ctx.moveTo(nodo.x, nodo.y);
+                ctx.lineTo(nodo.derecho.x, nodo.derecho.y);
+                ctx.stroke();
+                dibujarAristas(nodo.derecho);
+            }
+        }
+
+        // Dibujar nodos
+        function dibujarNodos(nodo) {
+            if (nodo === null) return;
+
+            const container = document.querySelector('.arbol-container');
+
+            // Crear o actualizar nodo visual
+            let nodoElement = document.querySelector(`.node[data-valor="${nodo.valor}"]`);
+
+            if (!nodoElement) {
+                nodoElement = document.createElement('div');
+                nodoElement.className = 'node';
+                nodoElement.setAttribute('data-valor', nodo.valor);
+                nodoElement.textContent = nodo.valor;
+                container.appendChild(nodoElement);
+
+                // Marcar raíz
+                if (nodo === arbol.raiz) {
+                    nodoElement.classList.add('root');
+                }
+
+                // Evento click para eliminación
+                nodoElement.addEventListener('click', manejarClickNodo);
+            }
+
+            // Posicionar nodo
+            nodoElement.style.left = `${nodo.x - 25}px`;
+            nodoElement.style.top = `${nodo.y - 25}px`;
+
+            // Quitar highlight y estados
+            nodoElement.classList.remove('highlight', 'delete-ready');
+
+            // Aplicar modo eliminación
+            if (modoEliminacion) {
+                nodoElement.classList.add('delete-ready');
+            }
+
+            // Dibujar hijos
+            dibujarNodos(nodo.izquierdo);
+            dibujarNodos(nodo.derecho);
+        }
+
+        // Manejar click en nodo (para eliminación)
+        function manejarClickNodo(event) {
+            if (!modoEliminacion) return;
+
+            const nodoElement = event.target;
+            const valor = parseInt(nodoElement.getAttribute('data-valor'));
+
+            // Eliminar el nodo
+            arbol.eliminar(valor);
+            mostrarMensaje(`Nodo ${valor} eliminado del árbol`, 'success');
+
+            // Salir del modo eliminación
+            salirModoEliminacion();
+
+            // Redibujar el árbol
+            dibujarArbol();
+        }
+
+        // Activar modo eliminación
+        function activarModoEliminacion() {
+            modoEliminacion = true;
+            deleteBtn.classList.add('active');
+            deleteModeIndicator.style.display = 'block';
+            mostrarMensaje('Modo eliminación activado - Haz clic en un nodo para eliminarlo', 'warning');
+
+            // Aplicar estilo a todos los nodos
+            document.querySelectorAll('.node').forEach(nodo => {
+                nodo.classList.add('delete-ready');
+            });
+        }
+
+        // Salir del modo eliminación
+        function salirModoEliminacion() {
+            modoEliminacion = false;
+            deleteBtn.classList.remove('active');
+            deleteModeIndicator.style.display = 'none';
+
+            // Quitar estilo de todos los nodos
+            document.querySelectorAll('.node').forEach(nodo => {
+                nodo.classList.remove('delete-ready');
+            });
+        }
+
+        // Actualizar recorridos
+        function actualizarRecorridos() {
+            preOrderResult.innerHTML = arbol.preOrden().map(val =>
+                `<div class="recorrido-item">${val}</div>`
+            ).join('');
+
+            inOrderResult.innerHTML = arbol.inOrden().map(val =>
+                `<div class="recorrido-item">${val}</div>`
+            ).join('');
+
+            postOrderResult.innerHTML = arbol.postOrden().map(val =>
+                `<div class="recorrido-item">${val}</div>`
+            ).join('');
+
+            levelOrderResult.innerHTML = arbol.porNiveles().map(val =>
+                `<div class="recorrido-item">${val}</div>`
+            ).join('');
+        }
+
+        // Mostrar mensaje
+        function mostrarMensaje(mensaje, tipo = 'info') {
+            statusElement.textContent = mensaje;
+            statusElement.className = 'status ' + tipo;
+        }
+
+        // Limpiar nodos visuales
+        function limpiarNodosVisuales() {
+            document.querySelectorAll('.node').forEach(nodo => nodo.remove());
+        }
+
+        // Event Listeners
+        insertBtn.addEventListener('click', () => {
+            const valor = parseInt(elementoInput.value);
+
+            if (isNaN(valor)) {
+                mostrarMensaje('Error: Ingresa un número válido', 'error');
+                return;
+            }
+
+            if (valor < 0 || valor > 999) {
+                mostrarMensaje('Error: El número debe estar entre 0 y 999', 'error');
+                return;
+            }
+
+            if (arbol.buscar(valor)) {
+                mostrarMensaje(`El valor ${valor} ya existe en el árbol`, 'error');
+                return;
+            }
+
+            arbol.insertar(valor);
+            mostrarMensaje(`Valor ${valor} insertado en el árbol`, 'success');
+            elementoInput.value = '';
+            dibujarArbol();
+        });
+
+        searchBtn.addEventListener('click', () => {
+            const valor = parseInt(elementoInput.value);
+
+            if (isNaN(valor)) {
+                mostrarMensaje('Error: Ingresa un número válido', 'error');
+                return;
+            }
+
+            const nodo = arbol.buscar(valor);
+
+            if (nodo) {
+                mostrarMensaje(`Valor ${valor} encontrado en el árbol`, 'success');
+                // Resaltar nodo
+                document.querySelectorAll('.node').forEach(n => {
+                    n.classList.remove('highlight');
+                    if (parseInt(n.getAttribute('data-valor')) === valor) {
+                        n.classList.add('highlight');
+                    }
+                });
+            } else {
+                mostrarMensaje(`Valor ${valor} no encontrado en el árbol`, 'error');
+            }
+        });
+
+        deleteBtn.addEventListener('click', () => {
+            if (modoEliminacion) {
+                salirModoEliminacion();
+                mostrarMensaje('Modo eliminación desactivado', 'info');
+            } else {
+                if (arbol.raiz === null) {
+                    mostrarMensaje('El árbol está vacío', 'error');
+                    return;
+                }
+                activarModoEliminacion();
+            }
+        });
+
+        minBtn.addEventListener('click', () => {
+            const min = arbol.encontrarMin();
+
+            if (min) {
+                mostrarMensaje(`Valor mínimo: ${min.valor}`, 'info');
+                // Resaltar nodo mínimo
+                document.querySelectorAll('.node').forEach(n => {
+                    n.classList.remove('highlight');
+                    if (parseInt(n.getAttribute('data-valor')) === min.valor) {
+                        n.classList.add('highlight');
+                    }
+                });
+            } else {
+                mostrarMensaje('El árbol está vacío', 'error');
+            }
+        });
+
+        maxBtn.addEventListener('click', () => {
+            const max = arbol.encontrarMax();
+
+            if (max) {
+                mostrarMensaje(`Valor máximo: ${max.valor}`, 'info');
+                // Resaltar nodo máximo
+                document.querySelectorAll('.node').forEach(n => {
+                    n.classList.remove('highlight');
+                    if (parseInt(n.getAttribute('data-valor')) === max.valor) {
+                        n.classList.add('highlight');
+                    }
+                });
+            } else {
+                mostrarMensaje('El árbol está vacío', 'error');
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            arbol.limpiar();
+            limpiarNodosVisuales();
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar canvas también
+            salirModoEliminacion();
+            mostrarMensaje('Árbol limpiado completamente', 'success');
+            actualizarRecorridos();
+        });
+
+        randomBtn.addEventListener('click', () => {
+            arbol.generarAleatorio(8);
+            salirModoEliminacion();
+            dibujarArbol();
+            mostrarMensaje('Árbol aleatorio generado con 8 elementos', 'success');
+        });
+
+        // Permitir Enter key
+        elementoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                insertBtn.click();
+            }
+        });
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            configurarCanvas();
+            dibujarArbol();
+        });
+
+        window.addEventListener('resize', () => {
+            configurarCanvas();
+            dibujarArbol();
+        });
+
+        // Generar árbol de ejemplo inicial
+        setTimeout(() => {
+            arbol.insertar(50);
+            arbol.insertar(30);
+            arbol.insertar(70);
+            arbol.insertar(20);
+            arbol.insertar(40);
+            arbol.insertar(60);
+            arbol.insertar(80);
+            dibujarArbol();
+        }, 1000);
+    </script>
+</body>
+</html>

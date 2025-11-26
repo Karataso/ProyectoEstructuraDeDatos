@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glosario Interactivo de Estructura de Datos</title>
+    <style>
+        /* Variables base para colores - **MODO OSCURO (DEFAULT)** */
+        :root {
+            --bg-primary: #1c1c1c; /* Fondo principal oscuro */
+            --bg-secondary: #282828; /* Fondo de contenedores oscuro */
+            --bg-header: #383838; /* Color de cabecera oscuro */
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --border-light: #444;
+            --topic-header-bg: #333;
+            --topic-header-hover-bg: #444;
+            --glossary-item-hover-border: #00bcd440; /* Teal para hover en oscuro */
+            --github-icon-color: #ffffff;
+            --topic-header-color: #00bcd4; /* Color de encabezado en oscuro (Teal) */
+            --topic-header-border: #00bcd4;
+        }
+
+        /* **MODO CLARO:** Sobrescritura de variables (Se activa con la clase .light-mode) */
+        .light-mode {
+            --bg-primary: #f4f7f6; /* Fondo principal claro */
+            --bg-secondary: white;
+            --bg-header: #007bff; /* Azul primario */
+            --text-primary: #333;
+            --text-secondary: #555;
+            --border-light: #ddd;
+            --topic-header-bg: #e9ecef;
+            --topic-header-hover-bg: #dee2e6;
+            --glossary-item-hover-border: #007bff40; /* Azul para hover en claro */
+            --github-icon-color: #333;
+            --topic-header-color: #007bff; /* Color de encabezado en claro (Azul) */
+            --topic-header-border: #007bff;
+        }
+
+        /* Estilos generales del cuerpo */
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.5s, color 0.5s;
+        }
+
+        /* Contenedor principal */
+        .glossary-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Estilos de cabecera */
+        header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            background-color: var(--bg-header);
+            color: white;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 10px;
+        }
+
+        .author-tag {
+            display: block;
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Estilos para temas/categorías */
+        .topic {
+            margin-bottom: 30px;
+            padding: 10px;
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Títulos de Sección */
+        .topic-header {
+            font-size: 1.6em;
+            color: var(--topic-header-color); /* Usando variable para el color */
+            padding: 15px;
+            margin: -10px -10px 10px;
+            border-radius: 8px 8px 0 0;
+            background-color: var(--topic-header-bg);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border-bottom: 3px solid var(--topic-header-border); /* Usando variable para el borde */
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .topic-header:hover {
+            background-color: var(--topic-header-hover-bg);
+        }
+
+        /* Contenedor de lista de términos */
+        .topic .sub-list {
+            max-height: 5000px;
+            overflow: visible;
+            transition: max-height 0.5s ease-in-out;
+        }
+
+        /* Estilos para ítems del glosario */
+        .glossary-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid var(--border-light);
+            border-left: 5px solid var(--border-light);
+            border-radius: 6px;
+            background-color: var(--bg-secondary);
+            transition: border-color 0.3s, background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .glossary-item:hover {
+            border-left-color: var(--glossary-item-hover-border);
+            box-shadow: 0 0 10px var(--glossary-item-hover-border);
+        }
+
+        .term-header-collapsible {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .term-header {
+            font-size: 1.2em;
+            color: var(--text-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .term-icon {
+            margin-right: 10px;
+            font-size: 1.4em;
+        }
+
+        .definition-short {
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            flex-grow: 1;
+            margin-left: 20px;
+            text-align: right;
+            transition: opacity 0.3s;
+        }
+
+        /* FIX CRÍTICO: Definición Completa */
+        .definition-full {
+            /* Usamos max-height para la transición suave */
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, opacity 0.3s ease-out, padding 0.3s ease-in-out, margin 0.3s ease-in-out;
+            padding-top: 0;
+            margin-top: 0;
+            border-top: 1px solid transparent;
+        }
+
+        /* Estado abierto: Establece un max-height lo suficientemente grande para contener cualquier definición */
+        .glossary-item.open .definition-full {
+            max-height: 5000px; /* Valor seguro para la expansión */
+            opacity: 1;
+            padding-top: 15px;
+            margin-top: 15px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        /* Ocultar la definición corta cuando se abre la completa */
+        .glossary-item.open .definition-short {
+            opacity: 0;
+            visibility: hidden;
+            height: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Botón de Modo Oscuro */
+        .floating-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5em;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s, transform 0.2s, color 0.3s;
+            z-index: 1000;
+        }
+
+        .floating-toggle:hover {
+            background-color: var(--topic-header-hover-bg);
+            transform: scale(1.05);
+        }
+
+        /* Estilos del Footer */
+        footer {
+            text-align: center;
+            padding: 25px 15px;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-light);
+            background-color: var(--topic-header-bg);
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        /* Estilos del Botón de GitHub */
+        .footer-github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .footer-github-link:hover {
+            background-color: var(--topic-header-hover-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .github-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--github-icon-color);
+            transition: fill 0.3s;
+        }
+
+        /* Diseño responsivo para móviles */
+        @media (max-width: 768px) {
+            .floating-toggle {
+                top: 10px;
+                right: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2em;
+            }
+
+            .glossary-container {
+                margin: 20px 0;
+                padding: 0 10px;
+            }
+
+            .topic-header {
+                font-size: 1.4em;
+            }
+
+            .term-header {
+                font-size: 1em;
+            }
+
+            .definition-short {
+                margin-left: 10px;
+                text-align: left;
+            }
+
+            .footer-github-link {
+                padding: 6px 12px;
+                font-size: 0.85em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="darkModeToggle" class="floating-toggle" aria-label="Alternar modo oscuro">
+    </button>
+
+    <header>
+        <h1>Glosario de Conceptos Clave de Estructura de Datos</h1>
+        <p class="subtitle">¡Aprende y repasa los términos abordados en el curso!</p>
+        <span class="author-tag">By: Arafath Sepulveda Arellano</span>
+    </header>
+
+    <main class="glossary-container">
+
+        <div class="topic">
+            <h2 class="topic-header">Conceptos Fundamentales</h2>
+            <div class="sub-list">
+
+                <div class="glossary-item" data-term="Estructura de datos">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">🧱</span>
+                            Estructura de datos
+                        </h3>
+                        <p class="definition-short">
+                            Organización y gestión de datos en memoria para el acceso y la modificación eficiente.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Una <strong>estructura de datos</strong> es un método especializado para organizar, gestionar y almacenar datos en una computadora de manera que el acceso,
+                            la inserción y la eliminación de elementos se realicen de forma eficiente. Su elección es crucial ya que impacta directamente en la
+                            eficiencia y el rendimiento de los algoritmos que operan sobre ellos.                         </p>
+                        <p>
+                            <strong>Características Clave:</strong>
+                            <ul>
+                                <li><strong>Implementación Lógica:</strong> Define el modelo matemático o lógico de organización (ej. la idea de una cola).</li>
+                                <li><strong>Implementación Física:</strong> Se refiere a cómo se almacena realmente en la memoria (ej. una cola implementada con un array o una lista enlazada).</li>
+                                <li><strong>Operaciones:</strong> Cada estructura soporta un conjunto de operaciones bien definidas (ej. <code>push</code>, <code>pop</code>, <code>insert</code>, <code>search</code>).</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Ejemplo:</strong> Si se necesita acceso rápido a cualquier elemento por su posición, un <strong>Array</strong> es ideal. Si se requieren inserciones y eliminaciones rápidas al inicio o al final, una <strong>Lista Enlazada</strong> es mejor.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glossary-item" data-term="Algoritmo">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">⚙️</span>
+                            Algoritmo
+                        </h3>
+                        <p class="definition-short">
+                            Conjunto de instrucciones definidas, ordenadas y finitas para resolver un problema específico.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Un <strong>Algoritmo</strong> es una secuencia de pasos lógicos que garantizan la solución de un problema específico en un número finito de operaciones.
+                            En el contexto de estructuras de datos, los algoritmos son las recetas que permiten manipular los datos almacenados.
+                        </p>
+                        <p>
+                            <strong>Criterios de un Algoritmo Eficiente:</strong>
+                            <ul>
+                                <li><strong>Finito:</strong> Debe terminar después de un número finito de pasos.</li>
+                                <li><strong>Definido:</strong> Cada paso debe ser preciso y no ambiguo.</li>
+                                <li><strong>Eficaz:</strong> Las operaciones deben ser lo suficientemente sencillas para ser realizables.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Ejemplo:</strong> Los algoritmos de búsqueda (Lineal, Binaria) y los algoritmos de ordenamiento (QuickSort, MergeSort) son fundamentales. Por ejemplo, el algoritmo
+                            para buscar un elemento en una lista enlazada requiere recorrerla paso a paso, lo que demuestra la dependencia del algoritmo respecto a la estructura subyacente.
+                        </p>
+                    </div>
+                </div>
+
+                </div>
+        </div>
+
+        <div class="topic">
+            <h2 class="topic-header">Estructuras Lineales</h2>
+            <div class="sub-list">
+
+                <div class="glossary-item" data-term="Array (Arreglo)">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">📦</span>
+                            Array (Arreglo)
+                        </h3>
+                        <p class="definition-short">
+                            Colección de elementos almacenados en posiciones de memoria contiguas.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Un <strong>Array</strong> (o Arreglo) es la estructura de datos más básica y fundamental. Almacena elementos del mismo tipo de forma contigua en la memoria,
+                            lo que permite el cálculo directo de la dirección de memoria de cualquier elemento a partir de su índice (o <em>offset</em>) y la dirección base.
+                        </p>
+                        <p>
+                            <strong>Ventajas:</strong>
+                            <ul>
+                                <li><strong>Acceso Aleatorio</strong>: Permite acceder a cualquier elemento en tiempo constante, independientemente del tamaño del array.</li>
+                                <li><strong>Eficiencia de Caché:</strong> La contigüidad en la memoria permite una mejor utilización del caché de la CPU.</li>
+                            </ul>
+                            <strong>Desventajas:</strong>
+                            <ul>
+                                <li><strong>Tamaño Fijo:</strong> En muchos lenguajes, su tamaño debe definirse al crearse.</li>
+                                <li><strong>Inserción/Eliminación</strong>: Insertar o eliminar un elemento en el medio requiere mover todos los elementos subsiguientes.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Ejemplo Práctico:</strong> Almacenar la lista de calificaciones de 50 estudiantes. Como el número es fijo y el acceso por índice es clave, es la mejor opción.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glossary-item" data-term="Lista Enlazada">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">🔗</span>
+                            Lista Enlazada
+                        </h3>
+                        <p class="definition-short">
+                            Colección de nodos conectados, donde cada nodo contiene el dato y una referencia al siguiente.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Una <strong>Lista Enlazada</strong> es una estructura dinámica compuesta por nodos. Cada <strong>Nodo</strong> contiene dos partes: el dato y una referencia (puntero)
+                            al siguiente nodo. A diferencia de los arrays, los nodos no están necesariamente adyacentes en la memoria.
+                        </p>
+                        <p>
+                            <strong>Tipos y Eficiencia:</strong>
+                            <ul>
+                                <li><strong>Simplemente Enlazada:</strong> Solo tiene un puntero al siguiente nodo (recorrido unidireccional).</li>
+                                <li><strong>Doblemente Enlazada:</strong> Tiene punteros al nodo siguiente y al anterior, facilitando el recorrido bidireccional.</li>
+                                <li><strong>Acceso</strong>: Para encontrar el elemento en la posición <em>i</em>, hay que recorrer la lista desde el inicio.</li>
+                                <li><strong>Inserción/Eliminación</strong>: Si se conoce la ubicación del nodo adyacente, la operación solo requiere reasignar punteros, siendo muy rápida.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Ejemplo Práctico:</strong> Implementar un sistema de historial de navegación donde las adiciones (ir hacia adelante) y eliminaciones (ir hacia atrás) son frecuentes.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glossary-item" data-term="Pila (Stack)">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">🥞</span>
+                            Pila (Stack)
+                        </h3>
+                        <p class="definition-short">
+                            Estructura LIFO (Last-In, First-Out): el último en entrar es el primero en salir.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Una <strong>Pila</strong> (o Stack) es una estructura de datos abstracta que sigue el principio LIFO (Last-In, First-Out), similar a una pila de platos.
+                            Todas las operaciones se realizan en un solo extremo, conocido como la <strong>Cima</strong> (Top).
+                        </p>
+                        <p>
+                            <strong>Operaciones Fundamentales:</strong>
+                            <ul>
+                                <li><strong>Push:</strong> Añade un elemento a la cima de la pila.</li>
+                                <li><strong>Pop:</strong> Elimina y retorna el elemento de la cima de la pila.</li>
+                                <li><strong>Peek/Top:</strong> Retorna el elemento de la cima sin eliminarlo.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Uso Común:</strong> Las pilas son esenciales en el diseño de compiladores (verificación de sintaxis, paréntesis), gestión de la memoria de un programa
+                            (la famosa Pila de Llamadas - <em>Call Stack</em>) y en la implementación de la función "Deshacer" (Undo) en aplicaciones.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="glossary-item" data-term="Cola (Queue)">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">🚶</span>
+                            Cola (Queue)
+                        </h3>
+                        <p class="definition-short">
+                            Estructura FIFO (First-In, First-Out): el primero en entrar es el primero en salir.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Una <strong>Cola</strong> (o Queue) es una estructura de datos abstracta que implementa el principio FIFO (First-In, First-Out), como una fila en un supermercado.
+                            La inserción se realiza en el extremo trasero (<strong>Rear</strong> o Cola), y la eliminación en el extremo delantero (<strong>Front</strong> o Cabeza).
+                        </p>
+                        <p>
+                            <strong>Operaciones Fundamentales:</strong>
+                            <ul>
+                                <li><strong>Enqueue:</strong> Añade un elemento al final de la cola.</li>
+                                <li><strong>Dequeue:</strong> Elimina y retorna el elemento del frente de la cola.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Uso Común:</strong> Las colas se utilizan para gestionar recursos compartidos o tareas que deben procesarse en el orden en que llegan:
+                            impresoras, buffers de entrada/salida, y en algoritmos de recorrido de grafos como la Búsqueda en Amplitud (<em>Breadth-First Search</em> - BFS).
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="topic">
+            <h2 class="topic-header">Estructuras No Lineales (Árboles)</h2>
+            <div class="sub-list">
+
+                <div class="glossary-item" data-term="Árbol Binario">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">🌳</span>
+                            Árbol Binario
+                        </h3>
+                        <p class="definition-short">
+                            Estructura jerárquica donde cada nodo tiene como máximo dos nodos hijos.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Un <strong>Árbol Binario</strong> es una estructura de datos no lineal y jerárquica donde cada nodo principal (padre) tiene un máximo de dos nodos sucesores
+                            (hijo izquierdo e hijo derecho).
+                        </p>
+                        <p>
+                            <strong>Terminología Clave:</strong>
+                            <ul>
+                                <li><strong>Raíz:</strong> El nodo superior del árbol.</li>
+                                <li><strong>Hojas:</strong> Nodos que no tienen hijos.</li>
+                                <li><strong>Nivel:</strong> La distancia desde la raíz (la raíz está en el nivel 0).</li>
+                                <li><strong>Altura:</strong> La longitud de la trayectoria más larga desde la raíz hasta una hoja.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Recorridos (Traversals):</strong> Para acceder a todos los nodos, se usan diferentes métodos:
+                            <ul>
+                                <li><strong>In-order:</strong> Izquierda → Raíz → Derecha.</li>
+                                <li><strong>Pre-order:</strong> Raíz → Izquierda → Derecha.</li>
+                                <li><strong>Post-order:</strong> Izquierda → Derecha → Raíz.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Ejemplo Práctico:</strong> Representar expresiones matemáticas o la jerarquía de directorios en un sistema de archivos.                         </p>
+                    </div>
+                </div>
+
+                <div class="glossary-item" data-term="Árbol Binario de Búsqueda (BST)">
+                    <div class="term-header-collapsible">
+                        <h3 class="term-header">
+                            <span class="term-icon">🔍</span>
+                            Árbol Binario de Búsqueda (BST)
+                        </h3>
+                        <p class="definition-short">
+                            Árbol Binario que mantiene una propiedad de orden para búsquedas rápidas.
+                        </p>
+                    </div>
+                    <div class="definition-full">
+                        <p>
+                            Un <strong>Árbol Binario de Búsqueda (BST)</strong> es un tipo especial de Árbol Binario que se optimiza para operaciones de búsqueda, inserción y eliminación
+                            rápidas gracias a una propiedad de orden específica:
+                        </p>
+                        <p>
+                            <strong>Propiedad BST:</strong>                             <ul>
+                                <li>Todos los valores en el subárbol izquierdo de un nodo son <strong>menores</strong> que el valor del nodo.</li>
+                                <li>Todos los valores en el subárbol derecho de un nodo son <strong>mayores</strong> que el valor del nodo.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Rendimiento:</strong>
+                            <ul>
+                                <li><strong>Caso Promedio:</strong> Cuando el árbol está <strong>balanceado</strong> (la altura de los subárboles es similar), las operaciones son muy eficientes.</li>
+                                <li><strong>Peor Caso:</strong> Si los datos se insertan de forma ordenada (creciente o decreciente), el árbol se degenera en una lista enlazada, perdiendo su eficiencia de búsqueda.</li>
+                            </ul>
+                        </p>
+                        <p>
+                            <strong>Necesidad de Balanceo:</strong> Para garantizar un buen rendimiento, se usan variantes de BST que se auto-balancean, como los árboles <strong>AVL</strong> (Adelson-Velsky y Landis)
+                            o los árboles <strong>Rojo-Negro</strong> (Red-Black Trees), que ejecutan rotaciones para mantener la mínima altura posible.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <a href="https://github.com/Karataso" target="_blank" class="footer-github-link" aria-label="Perfil de GitHub de Karataso">
+            <svg class="github-icon" viewBox="0 0 16 16" version="1.1" width="20" height="20" aria-hidden="true">
+                <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.09-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+            </svg>
+            github.com/Karataso
+        </a>
+    </footer>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // Se ha eliminado la inicialización de MathJax ya que la sección Big O fue removida.
+
+            // --- Lógica de Colapsado y Expansión de Temas (Topic) ---
+            const topics = document.querySelectorAll('.topic-header');
+            topics.forEach(header => {
+                header.addEventListener('click', function () {
+                    this.classList.toggle('active');
+                    const subList = this.nextElementSibling;
+
+                    // Si está abierto, lo cierra; si está cerrado, lo abre
+                    if (subList.style.maxHeight && subList.style.maxHeight !== '0px' && subList.style.maxHeight !== '5000px') {
+                        subList.style.maxHeight = '0';
+                    } else {
+                        // Establece el scrollHeight para la transición (usamos un valor alto seguro)
+                        subList.style.maxHeight = '5000px';
+                    }
+                });
+            });
+
+            // --- Lógica de Colapsado y Expansión de Términos (Glossary Items) ---
+            const termHeaders = document.querySelectorAll('.term-header-collapsible');
+            termHeaders.forEach(header => {
+                header.addEventListener('click', function () {
+                    const item = this.closest('.glossary-item');
+                    const isCurrentlyOpen = item.classList.contains('open');
+
+                    // 1. Cierra todos los demás términos abiertos en el documento
+                    document.querySelectorAll('.glossary-item.open').forEach(openItem => {
+                        if (openItem !== item) {
+                            openItem.classList.remove('open');
+                        }
+                    });
+
+                    // 2. Abrir/Cerrar el ítem actual
+                    item.classList.toggle('open', !isCurrentlyOpen);
+
+                    // 3. Ajusta la altura del contenedor padre del tema (sub-list) si es necesario para el flujo.
+                    const subList = item.closest('.sub-list');
+                    if (subList) {
+                        // Forzamos un reajuste suave al abrir/cerrar un elemento
+                        subList.style.maxHeight = '5000px';
+                    }
+                });
+            });
+
+
+            // --- Lógica del Modo Oscuro (Parcheada) ---
+            const body = document.body;
+            const toggleButton = document.getElementById('darkModeToggle');
+
+            // Cargar la preferencia del usuario (default a 'dark' si no existe)
+            const storedMode = localStorage.getItem('mode');
+            const isLightModePreferred = storedMode === 'light';
+            // Si no hay 'mode' en localStorage, isLightModePreferred es 'false', y el modo oscuro es el default.
+
+            function updateMode(isLight) {
+                if (isLight) {
+                    body.classList.add('light-mode'); // Aplica la clase para el Modo Claro
+                    toggleButton.innerHTML = '🌙'; // Muestra la Luna (para ir a Oscuro)
+                } else {
+                    body.classList.remove('light-mode'); // Usa el CSS base (Modo Oscuro)
+                    toggleButton.innerHTML = '☀️'; // Muestra el Sol (para ir a Claro)
+                }
+            }
+
+            // Inicializar el modo.
+            updateMode(isLightModePreferred);
+
+            // Función de toggle
+            toggleButton.addEventListener('click', function () {
+                const isCurrentlyLight = body.classList.contains('light-mode');
+                const newModeIsLight = !isCurrentlyLight;
+
+                updateMode(newModeIsLight);
+
+                // Guardar la nueva preferencia
+                localStorage.setItem('mode', newModeIsLight ? 'light' : 'dark');
+            });
+
+            // Ajuste inicial para que las listas de términos (sub-list) se muestren abiertas por defecto
+            document.querySelectorAll('.topic .sub-list').forEach(list => {
+                list.style.maxHeight = '5000px';
+            });
+        });
+    </script>
+</body>
+</html>

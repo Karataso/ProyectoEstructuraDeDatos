@@ -16,6 +16,7 @@
             --color-cola: #00bcd4;
             --color-pila: #e91e63;
             --color-arbol: #34d399;
+            --color-glossary: #9333ea; /* Nuevo color para el Glosario */
             --color-success: #34d399;
             --color-error: #f87171;
             --color-info: #60a5fa;
@@ -102,6 +103,11 @@
             background: var(--color-arbol);
         }
 
+        /* Glosario Style */
+        .project-card.glossary::before {
+            background: var(--color-glossary);
+        }
+
         .project-card:hover {
             transform: translateY(-10px);
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
@@ -135,6 +141,12 @@
             box-shadow: 0 6px 15px rgba(52, 211, 153, 0.4);
         }
 
+        /* Glosario Icon Style */
+        .project-card.glossary .project-icon {
+            background: var(--color-glossary);
+            box-shadow: 0 6px 15px rgba(147, 51, 234, 0.4);
+        }
+
         .project-title {
             text-align: center;
             margin-bottom: 15px;
@@ -152,6 +164,11 @@
 
         .project-card.arbol .project-title {
             color: var(--color-arbol);
+        }
+
+        /* Glosario Title Style */
+        .project-card.glossary .project-title {
+            color: var(--color-glossary);
         }
 
         .project-description {
@@ -194,6 +211,11 @@
             color: var(--color-arbol);
         }
 
+        /* Glosario Feature Style */
+        .project-card.glossary .project-features li::before {
+            color: var(--color-glossary);
+        }
+
         .project-btn {
             display: flex;
             align-items: center;
@@ -228,6 +250,13 @@
             background: var(--color-arbol);
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(52, 211, 153, 0.4);
+        }
+
+        /* Glosario Button Hover Style */
+        .project-card.glossary .project-btn:hover {
+            background: var(--color-glossary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(147, 51, 234, 0.4);
         }
 
         .info-section {
@@ -350,6 +379,10 @@
             animation-delay: 0.4s;
         }
 
+        .project-card:nth-child(4) { /* Nuevo retardo para el Glosario */
+            animation-delay: 0.6s;
+        }
+
         /* --- Responsiveness --- */
         @media (max-width: 768px) {
             .container {
@@ -408,7 +441,6 @@
         </p>
 
         <div class="projects-grid">
-            <!-- Proyecto Colas -->
             <div class="project-card cola">
                 <div class="project-icon">
                     <i class="fas fa-project-diagram"></i>
@@ -431,7 +463,6 @@
                 </a>
             </div>
 
-            <!-- Proyecto Pilas -->
             <div class="project-card pila">
                 <div class="project-icon">
                     <i class="fas fa-layer-group"></i>
@@ -454,7 +485,6 @@
                 </a>
             </div>
 
-            <!-- Proyecto Árboles -->
             <div class="project-card arbol">
                 <div class="project-icon">
                     <i class="fas fa-tree"></i>
@@ -476,7 +506,28 @@
                     Abrir Proyecto Árboles
                 </a>
             </div>
-        </div>
+
+            <div class="project-card glossary">
+                <div class="project-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h2 class="project-title">Glosario de Conceptos</h2>
+                <p class="project-description">
+                    Diccionario interactivo con definiciones, ejemplos y características clave de las estructuras de datos y algoritmos fundamentales.
+                </p>
+                <ul class="project-features">
+                    <li>Conceptos fundamentales</li>
+                    <li>Estructuras lineales (Listas, Pilas, Colas)</li>
+                    <li>Estructuras no lineales (Árboles)</li>
+                    <li>Modo oscuro/claro persistente</li>
+                    <li>Interfaz responsive</li>
+                </ul>
+                <a href="Glosario/Glosario.html" class="project-btn">
+                    <i class="fas fa-external-link-alt"></i>
+                    Abrir Glosario
+                </a>
+            </div>
+            </div>
 
         <div class="info-section">
             <h2>Características de los Proyectos</h2>

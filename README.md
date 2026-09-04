@@ -6,6 +6,8 @@
 
 Colección de objetos multimedia interactivos para estudiar estructuras de datos fundamentales, desarrollada como proyecto académico. Cada módulo permite manipular la estructura en tiempo real con retroalimentación visual inmediata.
 
+**Ver demo:** [karataso.github.io/ProyectoEstructuraDeDatos](https://karataso.github.io/ProyectoEstructuraDeDatos/)
+
 ## Módulos
 
 | Módulo | Descripción | Recurso |
@@ -41,7 +43,7 @@ Colección de objetos multimedia interactivos para estudiar estructuras de datos
 
 ## Uso
 
-Es un sitio estático: basta con abrir `index.html` en el navegador, o servirlo localmente:
+Es un sitio estático publicado en GitHub Pages: basta con abrir `index.html` en el navegador, o servirlo localmente:
 
 ```bash
 # con Python
